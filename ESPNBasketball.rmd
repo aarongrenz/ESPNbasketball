@@ -1,0 +1,194 @@
+---
+title: "NCAA Basketball"
+author: "Aaron Grenz and Marie Marshall"
+output: pdf_document
+---
+
+```{r,echo=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ggmap)
+library(gtable)
+library(gridExtra)
+library(reshape2)
+```
+
+```{r,echo=FALSE}
+load("C:/Users/b021494/Desktop/DataViz/GitHub/ESPNBball/Seasonstatisticscleaned.rda")
+```
+
+```{r,echo=FALSE}
+ggplot(subset(Seasonstatistics,Player %in% c("Kelly Olynyk", "Elias Harris")),aes(x=Year,y=Field.Goals.Made,color=Player,group=Player))+geom_point()+geom_line()+theme(axis.text.x = element_text(angle=-90))+ggtitle("Career Field Goals Made: Olynyk vs. Harris")
+
+ggplot(subset(Seasonstatistics,Player %in% c("Kelly Olynyk", "Elias Harris")),aes(x=Year,y=Field.Goals.Made/Field.Goals.Attempted,color=Player,group=Player))+geom_point()+geom_line()+theme(axis.text.x = element_text(angle=-90))+ggtitle("Career Field Goal Percentage: Olynyk vs. Harris")
+
+ggplot(subset(Seasonstatistics,Player %in% c("Kelly Olynyk", "Elias Harris")),aes(x=Year,y=Assists, color=Player,group=Player))+geom_point()+geom_line()+theme(axis.text.x = element_text(angle=-90))+ggtitle("Career Assists: Olynyk vs. Harris")
+
+ggplot(subset(Seasonstatistics,Player %in% c("Kelly Olynyk", "Elias Harris")),aes(x=Year,y=Rebounds,color=Player,group=Player))+geom_point()+geom_line()+theme(axis.text.x = element_text(angle=-90))+ggtitle("Career Rebounds: Olynyk vs. Harris")
+
+ggplot(subset(Seasonstatistics,Player %in% c("Kelly Olynyk", "Elias Harris")),aes(x=Year,y=Blocks,color=Player,group=Player))+geom_point()+geom_line()+theme(axis.text.x = element_text(angle=-90))+ggtitle("Career Blocks: Olynyk vs. Harris")
+
+ggplot(subset(Seasonstatistics,Player %in% c("Kelly Olynyk", "Elias Harris")),aes(x=Year,y=TurnOvers,color=Player,group=Player))+geom_point()+geom_line()+theme(axis.text.x = element_text(angle=-90))+ggtitle("Career Turnovers: Olynyk vs. Harris")
+
+ggplot(subset(Seasonstatistics,Player %in% c("Kelly Olynyk","Elias Harris","David Stockton","Sam Dower")),aes(x=2012-2013,y=TurnOvers,color=Player,group=Player))+geom_point()+geom_boxplot()+theme(axis.text.x = element_blank(), axis.text.y = element_blank())+ggtitle("Turnovers for 4 Gonzaga Players")+facet_wrap(~Player,ncol=4)+theme(legend.position="none")
+
+ggplot(subset(Seasonstatistics,Year %in% c("2010-2011","2011-2012","2012-2013","2013-2014")),aes(x=Year,y=Field.Goals.Made/Field.Goals.Attempted,size=Field.Goals.Made))+geom_point()+theme(axis.text.x = element_text(angle=-90))+ggtitle("Shooting Percentage and Field Goals Made: 2011-2014")
+
+ggplot(subset(Seasonstatistics,Year %in% c("2005-2006","2012-2013")),aes(x=Year,y=Field.Goals.Made/Field.Goals.Attempted,size=Field.Goals.Made))+geom_point()+theme(axis.text.x = element_text(angle=-90))+ggtitle("Shooting Percentage and Field Goals Made: 2006 vs. 2013")
+```
+
+```{r,echo=FALSE}
+newdf=Seasonstatistics %>% 
+  tbl_df(.)%>% 
+  select(2:18,20)%>% 
+  melt(.,id=c("Team","Year", "Conference"))%>%
+  filter(Conference=="West Coast")%>%
+  tbl_df(.)%>% 
+  group_by(Team,Year,variable) %>% 
+  summarise(sum=sum(value),Mean=mean(value))
+  
+ggplot(subset(newdf,variable %in% c("Points")),aes(x=Year, y=sum, color=Team, group=Team))+geom_point()+geom_line()+facet_wrap(~Team,ncol=3)
+
+ggplot(subset(newdf,variable %in% c("Points")),aes(x=Year, y=Mean, color=Team, group=Team))+geom_point()+geom_line()+facet_wrap(~Team,ncol=3)
+```
+
+```{r,echo=FALSE}
+teamminutes<-Seasonstatistics %>% ## %>% is used to chain multiple operations together.
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Minutes) %>%
+  arrange(-Minutes) %>%
+  head(3)
+
+P1=ggplot(teamminutes,aes(x= reorder(Player,-Minutes), y=Minutes, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamFGmade<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Field.Goals.Made) %>%
+  arrange(-Field.Goals.Made) %>%
+  head(3)
+
+P2=ggplot(teamFGmade,aes(x=reorder(Player,-Field.Goals.Made), y=Field.Goals.Made, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamFGattempted<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Field.Goals.Attempted) %>%
+  arrange(-Field.Goals.Attempted) %>%
+  head(3)
+
+P3=ggplot(teamFGattempted,aes(x=reorder(Player,-Field.Goals.Attempted), y=Field.Goals.Attempted, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamFTmade<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Free.Throws.Made) %>%
+  arrange(-Free.Throws.Made) %>%
+  head(3)
+
+P4=ggplot(teamFTmade,aes(x=reorder(Player,-Free.Throws.Made), y=Free.Throws.Made, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamFTattempted<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Free.Throws.Attempted) %>%
+  arrange(-Free.Throws.Attempted) %>%
+  head(3)
+
+P5=ggplot(teamFTattempted,aes(x=reorder(Player,-Free.Throws.Attempted), y=Free.Throws.Attempted, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+team3PTmade<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Three.Point.FieldGoals.Made) %>%
+  arrange(-Three.Point.FieldGoals.Made) %>%
+  head(3)
+
+P6=ggplot(team3PTmade,aes(x=reorder(Player,-Three.Point.FieldGoals.Made), y=Three.Point.FieldGoals.Made, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+team3PTattempted<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Three.Point.FieldGoals.Attempted) %>%
+  arrange(-Three.Point.FieldGoals.Attempted) %>%
+  head(3)
+
+P7=ggplot(team3PTattempted,aes(x=reorder(Player,-Three.Point.FieldGoals.Attempted), y=Three.Point.FieldGoals.Attempted, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamPoints<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Points) %>%
+  arrange(-Points) %>%
+  head(3)
+
+P8=ggplot(teamPoints,aes(x=reorder(Player,-Points), y=Points, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamOFFreb<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Offensive.Rebounds) %>%
+  arrange(-Offensive.Rebounds) %>%
+  head(3)
+
+P9=ggplot(teamOFFreb,aes(x=reorder(Player,-Offensive.Rebounds), y=Offensive.Rebounds, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamDEFreb<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Defensive.Rebounds) %>%
+  arrange(-Defensive.Rebounds) %>%
+  head(3)
+
+P10=ggplot(teamDEFreb,aes(x=reorder(Player,-Defensive.Rebounds), y=Defensive.Rebounds, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamRebounds<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Rebounds) %>%
+  arrange(-Rebounds) %>%
+  head(3)
+
+P11=ggplot(teamRebounds,aes(x=reorder(Player,-Rebounds), y=Rebounds, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamAssists<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Assists) %>%
+  arrange(-Assists) %>%
+  head(3)
+
+P12=ggplot(teamAssists,aes(x=reorder(Player,-Assists), y=Assists, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamTurnovers<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, TurnOvers) %>%
+  arrange(-TurnOvers) %>%
+  head(3)
+
+P13=ggplot(teamTurnovers,aes(x=reorder(Player,-TurnOvers), y=TurnOvers, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamSteals<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Steals) %>%
+  arrange(-Steals) %>%
+  head(3)
+
+P14=ggplot(teamSteals,aes(x=reorder(Player,-Steals), y=Steals, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+teamBlocks<-Seasonstatistics %>%
+  filter(Team=="Texas Longhorns",Year=="2006-2007") %>%
+  select(Player, Blocks) %>%
+  arrange(-Blocks) %>%
+  head(3)
+
+P15=ggplot(teamBlocks,aes(x=reorder(Player,-Blocks), y=Blocks, fill=Player,))+ geom_bar(stat="identity") + theme(legend.position="none")
+
+grid.arrange(P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12,P13,P14,P15,ncol=5)
+```
+
+```{r,echo=FALSE}
+topScorers<-Seasonstatistics %>%
+  filter(Points>750)
+
+ggplot(topScorers,aes(x=Player, y=Points, fill=Player)) + geom_bar(stat="identity") + theme(legend.position="none") + theme(axis.text.x = element_text(angle=-90))+ggtitle("Top Scorers")
+
+topGuard<-Seasonstatistics %>%
+  filter(Points>500,Assists>150,Steals>50,Free.Throws.Made/Free.Throws.Attempted>0.80)
+
+ggplot(topGuard,aes(x=Player, y=Points, fill=Player))+ geom_bar(stat="identity") + theme(legend.position="none") + theme(axis.text.x = element_text(angle=-90)) + ggtitle("Top Guards")
+
+topPost<-Seasonstatistics %>%
+  filter(Points>500,Rebounds>200,Blocks>75)
+
+ggplot(topPost,aes(x=Player, y=Points, fill=Player))+ geom_bar(stat="identity") + theme(legend.position="none") + theme(axis.text.x = element_text(angle=-90)) + ggtitle("Top Posts")
+```
